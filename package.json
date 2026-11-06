@@ -1,0 +1,34 @@
+{
+  "name": "tribecrafter-sdk",
+  "version": "1.0.0",
+  "description": "Sdk for TribeCrafter Api",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "generate": "openapi-ts",
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "tribecrafter-sdk"
+  ],
+  "author": "Aasim Bhat",
+  "license": "ISC",
+  "devDependencies": {
+    "@hey-api/openapi-ts": "0.99.0",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@hey-api/client-fetch": "^0.13.1"
+  }
+}
