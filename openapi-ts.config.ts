@@ -26,6 +26,11 @@ export default defineConfig({
     {
       name: '@hey-api/sdk',
       transformer: true,
+      operations: {
+        strategy: 'single',
+        containerName: 'TribeCrafterClient',
+        methods: 'instance',
+      },
     },
   ],
 });

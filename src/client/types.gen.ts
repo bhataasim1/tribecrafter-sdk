@@ -4,6 +4,136 @@ export type ClientOptions = {
   baseUrl: "http://localhost:8055" | (string & {});
 };
 
+export type GetApiNotificationsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Page number
+     */
+    page?: number;
+    /**
+     * Number of items per page
+     */
+    limit?: number;
+    /**
+     * Filter by state
+     */
+    state?: "all" | "unread";
+    /**
+     * Filter by before ID
+     */
+    before?: string;
+  };
+  url: "/api/notifications";
+};
+
+export type GetApiNotificationsErrors = {
+  /**
+   * Invalid request query
+   */
+  400: unknown;
+  /**
+   * Authentication required
+   */
+  401: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type GetApiNotificationsResponses = {
+  /**
+   * Notifications retrieved
+   */
+  200: unknown;
+};
+
+export type GetApiNotificationsUnreadCountData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/notifications/unread-count";
+};
+
+export type GetApiNotificationsUnreadCountErrors = {
+  /**
+   * Authentication required
+   */
+  401: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type GetApiNotificationsUnreadCountResponses = {
+  /**
+   * Unread count retrieved
+   */
+  200: unknown;
+};
+
+export type PostApiNotificationsByIdReadData = {
+  body?: never;
+  path: {
+    /**
+     * Notification ID
+     */
+    id: string;
+  };
+  query?: never;
+  url: "/api/notifications/{id}/read";
+};
+
+export type PostApiNotificationsByIdReadErrors = {
+  /**
+   * Invalid request
+   */
+  400: unknown;
+  /**
+   * Authentication required
+   */
+  401: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type PostApiNotificationsByIdReadResponses = {
+  /**
+   * Notification marked as read
+   */
+  200: unknown;
+};
+
+export type PostApiNotificationsReadAllData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/notifications/read-all";
+};
+
+export type PostApiNotificationsReadAllErrors = {
+  /**
+   * Authentication required
+   */
+  401: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type PostApiNotificationsReadAllResponses = {
+  /**
+   * All notifications marked as read
+   */
+  200: unknown;
+};
+
 export type GetApiBlogsCategoriesData = {
   body?: never;
   path?: never;
@@ -4130,6 +4260,320 @@ export type GetApiUserBlockedErrors = {
 export type GetApiUserBlockedResponses = {
   /**
    * Blocked users list retrieved
+   */
+  200: unknown;
+};
+
+export type GetApiWishlistData = {
+  body?: never;
+  path?: never;
+  query?: {
+    /**
+     * Page number
+     */
+    page?: number;
+    /**
+     * Items per page
+     */
+    limit?: number;
+    /**
+     * Collection type
+     */
+    collection?: "product" | "group" | "course" | "event" | "blog" | "all";
+    /**
+     * Collection type (alias for collection)
+     */
+    type?: "product" | "group" | "course" | "event" | "blog" | "all";
+    /**
+     * Sort order
+     */
+    sort?: "new" | "old" | "most_popular" | "popular" | "recommended";
+    /**
+     * Search query
+     */
+    search?: string;
+    /**
+     * Duration filter
+     */
+    duration?: string;
+    /**
+     * Lifetime filter
+     */
+    is_lifetime?: string;
+    /**
+     * Access filter
+     */
+    access?: string;
+    /**
+     * Visibility filter
+     */
+    visibility?: string;
+    /**
+     * Pricing filter
+     */
+    pricing?: string;
+    /**
+     * Status filter
+     */
+    status?: string;
+    /**
+     * Categories filter
+     */
+    categories?: string;
+    /**
+     * Mode filter
+     */
+    mode?: string;
+  };
+  url: "/api/wishlist";
+};
+
+export type GetApiWishlistErrors = {
+  /**
+   * Invalid request
+   */
+  400: unknown;
+  /**
+   * Authentication required
+   */
+  401: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type GetApiWishlistResponses = {
+  /**
+   * Wishlist retrieved
+   */
+  200: unknown;
+};
+
+export type PostApiWishlistAddData = {
+  body: {
+    /**
+     * List of wishlist items
+     */
+    items: Array<{
+      collection: "product" | "group" | "course" | "event" | "blog";
+      item: string;
+    }>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/wishlist/add";
+};
+
+export type PostApiWishlistAddErrors = {
+  /**
+   * Invalid request body
+   */
+  400: unknown;
+  /**
+   * Authentication required
+   */
+  401: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type PostApiWishlistAddResponses = {
+  /**
+   * Wishlist item added
+   */
+  200: unknown;
+};
+
+export type DeleteApiWishlistRemoveData = {
+  /**
+   * Wishlist item to remove
+   */
+  body: {
+    collection: "product" | "group" | "course" | "event" | "blog";
+    item: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/wishlist/remove";
+};
+
+export type DeleteApiWishlistRemoveErrors = {
+  /**
+   * Invalid request body
+   */
+  400: unknown;
+  /**
+   * Authentication required
+   */
+  401: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type DeleteApiWishlistRemoveResponses = {
+  /**
+   * Wishlist item removed
+   */
+  200: unknown;
+};
+
+export type GetApiWishlistSummaryData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/wishlist/summary";
+};
+
+export type GetApiWishlistSummaryErrors = {
+  /**
+   * Authentication required
+   */
+  401: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type GetApiWishlistSummaryResponses = {
+  /**
+   * Wishlist summary retrieved
+   */
+  200: unknown;
+};
+
+export type PostApiWishlistGuestData = {
+  body: {
+    /**
+     * List of wishlist items
+     */
+    items: Array<{
+      collection: "product" | "group" | "course" | "event" | "blog";
+      item: string;
+    }>;
+  };
+  path?: never;
+  query?: {
+    /**
+     * Page number
+     */
+    page?: number;
+    /**
+     * Items per page
+     */
+    limit?: number;
+    /**
+     * Collection type
+     */
+    collection?: "product" | "group" | "course" | "event" | "blog" | "all";
+    /**
+     * Collection type (alias for collection)
+     */
+    type?: "product" | "group" | "course" | "event" | "blog" | "all";
+    /**
+     * Sort order
+     */
+    sort?: "new" | "old" | "most_popular" | "popular" | "recommended";
+    /**
+     * Search query
+     */
+    search?: string;
+    /**
+     * Duration filter
+     */
+    duration?: string;
+    /**
+     * Lifetime filter
+     */
+    is_lifetime?: string;
+    /**
+     * Access filter
+     */
+    access?: string;
+    /**
+     * Visibility filter
+     */
+    visibility?: string;
+    /**
+     * Pricing filter
+     */
+    pricing?: string;
+    /**
+     * Status filter
+     */
+    status?: string;
+    /**
+     * Categories filter
+     */
+    categories?: string;
+    /**
+     * Mode filter
+     */
+    mode?: string;
+  };
+  url: "/api/wishlist/guest";
+};
+
+export type PostApiWishlistGuestErrors = {
+  /**
+   * Invalid request
+   */
+  400: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type PostApiWishlistGuestResponses = {
+  /**
+   * Guest wishlist retrieved
+   */
+  200: unknown;
+};
+
+export type PostApiWishlistSyncData = {
+  body: {
+    /**
+     * List of product IDs to add to cart
+     */
+    cart_products: Array<string>;
+    /**
+     * List of wishlist items to add to wishlist
+     */
+    wishlist_items: Array<{
+      collection: "product" | "group" | "course" | "event" | "blog";
+      item: string;
+    }>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/wishlist/sync";
+};
+
+export type PostApiWishlistSyncErrors = {
+  /**
+   * Invalid request
+   */
+  400: unknown;
+  /**
+   * Authentication required
+   */
+  401: unknown;
+  /**
+   * Internal server error
+   */
+  500: unknown;
+};
+
+export type PostApiWishlistSyncResponses = {
+  /**
+   * Wishlist synced
    */
   200: unknown;
 };

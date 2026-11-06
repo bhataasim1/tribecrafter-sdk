@@ -42,6 +42,9 @@ import type {
   DeleteApiReactionByIdData,
   DeleteApiReactionByIdErrors,
   DeleteApiReactionByIdResponses,
+  DeleteApiWishlistRemoveData,
+  DeleteApiWishlistRemoveErrors,
+  DeleteApiWishlistRemoveResponses,
   GetApiBlogsBySlugData,
   GetApiBlogsBySlugErrors,
   GetApiBlogsBySlugResponses,
@@ -173,6 +176,12 @@ import type {
   GetApiMentionsData,
   GetApiMentionsErrors,
   GetApiMentionsResponses,
+  GetApiNotificationsData,
+  GetApiNotificationsErrors,
+  GetApiNotificationsResponses,
+  GetApiNotificationsUnreadCountData,
+  GetApiNotificationsUnreadCountErrors,
+  GetApiNotificationsUnreadCountResponses,
   GetApiPlansData,
   GetApiPlansResponses,
   GetApiPostByIdData,
@@ -208,6 +217,12 @@ import type {
   GetApiUserMeData,
   GetApiUserMeErrors,
   GetApiUserMeResponses,
+  GetApiWishlistData,
+  GetApiWishlistErrors,
+  GetApiWishlistResponses,
+  GetApiWishlistSummaryData,
+  GetApiWishlistSummaryErrors,
+  GetApiWishlistSummaryResponses,
   PatchApiChatConversationByIdMuteData,
   PatchApiChatConversationByIdMuteErrors,
   PatchApiChatConversationByIdMuteResponses,
@@ -280,6 +295,12 @@ import type {
   PostApiLessonPlaybackPositionData,
   PostApiLessonPlaybackPositionErrors,
   PostApiLessonPlaybackPositionResponses,
+  PostApiNotificationsByIdReadData,
+  PostApiNotificationsByIdReadErrors,
+  PostApiNotificationsByIdReadResponses,
+  PostApiNotificationsReadAllData,
+  PostApiNotificationsReadAllErrors,
+  PostApiNotificationsReadAllResponses,
   PostApiPostByIdMuteData,
   PostApiPostByIdMuteErrors,
   PostApiPostByIdMuteResponses,
@@ -310,6 +331,15 @@ import type {
   PostApiReportData,
   PostApiReportErrors,
   PostApiReportResponses,
+  PostApiWishlistAddData,
+  PostApiWishlistAddErrors,
+  PostApiWishlistAddResponses,
+  PostApiWishlistGuestData,
+  PostApiWishlistGuestErrors,
+  PostApiWishlistGuestResponses,
+  PostApiWishlistSyncData,
+  PostApiWishlistSyncErrors,
+  PostApiWishlistSyncResponses,
 } from "./types.gen.js";
 
 export type Options<
@@ -330,2081 +360,2434 @@ export type Options<
   meta?: keyof ClientMeta extends never ? Record<string, unknown> : ClientMeta;
 };
 
-/**
- * Get list of blog categories
- */
-export const getApiBlogsCategories = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiBlogsCategoriesData, ThrowOnError>,
-): RequestResult<GetApiBlogsCategoriesResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiBlogsCategoriesResponses,
-    unknown,
-    ThrowOnError
-  >({ url: "/api/blogs/categories", ...options });
+class HeyApiClient {
+  protected client: Client;
 
-/**
- * Get list of blogs
- */
-export const getApiBlogs = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiBlogsData, ThrowOnError>,
-): RequestResult<GetApiBlogsResponses, GetApiBlogsErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiBlogsResponses,
-    GetApiBlogsErrors,
-    ThrowOnError
-  >({ url: "/api/blogs", ...options });
+  constructor(args?: { client?: Client }) {
+    this.client = args?.client ?? client;
+  }
+}
 
-/**
- * Get list of my blogs
- */
-export const getApiBlogsMy = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiBlogsMyData, ThrowOnError>,
-): RequestResult<GetApiBlogsMyResponses, GetApiBlogsMyErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiBlogsMyResponses,
-    GetApiBlogsMyErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/blogs/my",
-    ...options,
-  });
+class HeyApiRegistry<T> {
+  private readonly defaultKey = "default";
 
-/**
- * Get blog by slug
- */
-export const getApiBlogsBySlug = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiBlogsBySlugData, ThrowOnError>,
-): RequestResult<
-  GetApiBlogsBySlugResponses,
-  GetApiBlogsBySlugErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  private readonly instances: Map<string, T> = new Map();
+
+  get(key?: string): T {
+    const instance = this.instances.get(key ?? this.defaultKey);
+    if (!instance) {
+      throw new Error(
+        `No SDK client found. Create one with "new TribeCrafterClient()" to fix this error.`,
+      );
+    }
+    return instance;
+  }
+
+  set(value: T, key?: string): void {
+    this.instances.set(key ?? this.defaultKey, value);
+  }
+}
+
+export class TribeCrafterClient extends HeyApiClient {
+  public static readonly __registry: HeyApiRegistry<TribeCrafterClient> =
+    new HeyApiRegistry<TribeCrafterClient>();
+
+  constructor(args?: { client?: Client; key?: string }) {
+    super(args);
+    TribeCrafterClient.__registry.set(this, args?.key);
+  }
+
+  /**
+   * Get notifications
+   */
+  public getApiNotifications<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiNotificationsData, ThrowOnError>,
+  ): RequestResult<
+    GetApiNotificationsResponses,
+    GetApiNotificationsErrors,
+    ThrowOnError
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiNotificationsResponses,
+      GetApiNotificationsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/notifications",
+      ...options,
+    });
+  }
+
+  /**
+   * Get unread count
+   */
+  public getApiNotificationsUnreadCount<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiNotificationsUnreadCountData, ThrowOnError>,
+  ): RequestResult<
+    GetApiNotificationsUnreadCountResponses,
+    GetApiNotificationsUnreadCountErrors,
+    ThrowOnError
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiNotificationsUnreadCountResponses,
+      GetApiNotificationsUnreadCountErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/notifications/unread-count",
+      ...options,
+    });
+  }
+
+  /**
+   * Mark as read
+   */
+  public postApiNotificationsByIdRead<ThrowOnError extends boolean = false>(
+    options: Options<PostApiNotificationsByIdReadData, ThrowOnError>,
+  ): RequestResult<
+    PostApiNotificationsByIdReadResponses,
+    PostApiNotificationsByIdReadErrors,
+    ThrowOnError
+  > {
+    return (options.client ?? this.client).post<
+      PostApiNotificationsByIdReadResponses,
+      PostApiNotificationsByIdReadErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/notifications/{id}/read",
+      ...options,
+    });
+  }
+
+  /**
+   * Mark all as read
+   */
+  public postApiNotificationsReadAll<ThrowOnError extends boolean = false>(
+    options?: Options<PostApiNotificationsReadAllData, ThrowOnError>,
+  ): RequestResult<
+    PostApiNotificationsReadAllResponses,
+    PostApiNotificationsReadAllErrors,
+    ThrowOnError
+  > {
+    return (options?.client ?? this.client).post<
+      PostApiNotificationsReadAllResponses,
+      PostApiNotificationsReadAllErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/notifications/read-all",
+      ...options,
+    });
+  }
+
+  /**
+   * Get list of blog categories
+   */
+  public getApiBlogsCategories<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiBlogsCategoriesData, ThrowOnError>,
+  ): RequestResult<GetApiBlogsCategoriesResponses, unknown, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiBlogsCategoriesResponses,
+      unknown,
+      ThrowOnError
+    >({ url: "/api/blogs/categories", ...options });
+  }
+
+  /**
+   * Get list of blogs
+   */
+  public getApiBlogs<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiBlogsData, ThrowOnError>,
+  ): RequestResult<GetApiBlogsResponses, GetApiBlogsErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiBlogsResponses,
+      GetApiBlogsErrors,
+      ThrowOnError
+    >({ url: "/api/blogs", ...options });
+  }
+
+  /**
+   * Get list of my blogs
+   */
+  public getApiBlogsMy<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiBlogsMyData, ThrowOnError>,
+  ): RequestResult<GetApiBlogsMyResponses, GetApiBlogsMyErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiBlogsMyResponses,
+      GetApiBlogsMyErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/blogs/my",
+      ...options,
+    });
+  }
+
+  /**
+   * Get blog by slug
+   */
+  public getApiBlogsBySlug<ThrowOnError extends boolean = false>(
+    options: Options<GetApiBlogsBySlugData, ThrowOnError>,
+  ): RequestResult<
     GetApiBlogsBySlugResponses,
     GetApiBlogsBySlugErrors,
     ThrowOnError
-  >({ url: "/api/blogs/{slug}", ...options });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiBlogsBySlugResponses,
+      GetApiBlogsBySlugErrors,
+      ThrowOnError
+    >({ url: "/api/blogs/{slug}", ...options });
+  }
 
-/**
- * Get cart
- */
-export const getApiCart = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiCartData, ThrowOnError>,
-): RequestResult<GetApiCartResponses, GetApiCartErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiCartResponses,
-    GetApiCartErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/cart",
-    ...options,
-  });
+  /**
+   * Get cart
+   */
+  public getApiCart<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiCartData, ThrowOnError>,
+  ): RequestResult<GetApiCartResponses, GetApiCartErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiCartResponses,
+      GetApiCartErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/cart",
+      ...options,
+    });
+  }
 
-/**
- * Add item to cart
- */
-export const postApiCartAdd = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiCartAddData, ThrowOnError>,
-): RequestResult<PostApiCartAddResponses, PostApiCartAddErrors, ThrowOnError> =>
-  (options.client ?? client).post<
+  /**
+   * Add item to cart
+   */
+  public postApiCartAdd<ThrowOnError extends boolean = false>(
+    options: Options<PostApiCartAddData, ThrowOnError>,
+  ): RequestResult<
     PostApiCartAddResponses,
     PostApiCartAddErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/cart/add",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiCartAddResponses,
+      PostApiCartAddErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/cart/add",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Remove product from cart
- */
-export const deleteApiCartRemove = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteApiCartRemoveData, ThrowOnError>,
-): RequestResult<
-  DeleteApiCartRemoveResponses,
-  DeleteApiCartRemoveErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Remove product from cart
+   */
+  public deleteApiCartRemove<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiCartRemoveData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiCartRemoveResponses,
     DeleteApiCartRemoveErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/cart/remove",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiCartRemoveResponses,
+      DeleteApiCartRemoveErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/cart/remove",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Create a new conversation
- */
-export const postApiChatConversation = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiChatConversationData, ThrowOnError>,
-): RequestResult<
-  PostApiChatConversationResponses,
-  PostApiChatConversationErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Create a new conversation
+   */
+  public postApiChatConversation<ThrowOnError extends boolean = false>(
+    options: Options<PostApiChatConversationData, ThrowOnError>,
+  ): RequestResult<
     PostApiChatConversationResponses,
     PostApiChatConversationErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/conversation",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiChatConversationResponses,
+      PostApiChatConversationErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/conversation",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * List all conversations
- */
-export const getApiChatConversations = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiChatConversationsData, ThrowOnError>,
-): RequestResult<
-  GetApiChatConversationsResponses,
-  GetApiChatConversationsErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * List all conversations
+   */
+  public getApiChatConversations<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiChatConversationsData, ThrowOnError>,
+  ): RequestResult<
     GetApiChatConversationsResponses,
     GetApiChatConversationsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/conversations",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiChatConversationsResponses,
+      GetApiChatConversationsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/conversations",
+      ...options,
+    });
+  }
 
-/**
- * List all conversations
- */
-export const getApiChatConversationsOnline = <
-  ThrowOnError extends boolean = false,
->(
-  options?: Options<GetApiChatConversationsOnlineData, ThrowOnError>,
-): RequestResult<
-  GetApiChatConversationsOnlineResponses,
-  GetApiChatConversationsOnlineErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * List all conversations
+   */
+  public getApiChatConversationsOnline<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiChatConversationsOnlineData, ThrowOnError>,
+  ): RequestResult<
     GetApiChatConversationsOnlineResponses,
     GetApiChatConversationsOnlineErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/conversations/online",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiChatConversationsOnlineResponses,
+      GetApiChatConversationsOnlineErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/conversations/online",
+      ...options,
+    });
+  }
 
-/**
- * Get unread count
- */
-export const getApiChatUnreadCount = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiChatUnreadCountData, ThrowOnError>,
-): RequestResult<
-  GetApiChatUnreadCountResponses,
-  GetApiChatUnreadCountErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get unread count
+   */
+  public getApiChatUnreadCount<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiChatUnreadCountData, ThrowOnError>,
+  ): RequestResult<
     GetApiChatUnreadCountResponses,
     GetApiChatUnreadCountErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/unread-count",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiChatUnreadCountResponses,
+      GetApiChatUnreadCountErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/unread-count",
+      ...options,
+    });
+  }
 
-/**
- * Get conversation by id
- */
-export const getApiChatConversationById = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiChatConversationByIdData, ThrowOnError>,
-): RequestResult<
-  GetApiChatConversationByIdResponses,
-  GetApiChatConversationByIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get conversation by id
+   */
+  public getApiChatConversationById<ThrowOnError extends boolean = false>(
+    options: Options<GetApiChatConversationByIdData, ThrowOnError>,
+  ): RequestResult<
     GetApiChatConversationByIdResponses,
     GetApiChatConversationByIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/conversation/{id}",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiChatConversationByIdResponses,
+      GetApiChatConversationByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/conversation/{id}",
+      ...options,
+    });
+  }
 
-/**
- * Get messages for a conversation
- */
-export const getApiChatConversationByIdMessages = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiChatConversationByIdMessagesData, ThrowOnError>,
-): RequestResult<
-  GetApiChatConversationByIdMessagesResponses,
-  GetApiChatConversationByIdMessagesErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get messages for a conversation
+   */
+  public getApiChatConversationByIdMessages<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<GetApiChatConversationByIdMessagesData, ThrowOnError>,
+  ): RequestResult<
     GetApiChatConversationByIdMessagesResponses,
     GetApiChatConversationByIdMessagesErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/conversation/{id}/messages",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiChatConversationByIdMessagesResponses,
+      GetApiChatConversationByIdMessagesErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/conversation/{id}/messages",
+      ...options,
+    });
+  }
 
-/**
- * Send a message to a conversation
- */
-export const postApiChatConversationByIdMessage = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PostApiChatConversationByIdMessageData, ThrowOnError>,
-): RequestResult<
-  PostApiChatConversationByIdMessageResponses,
-  PostApiChatConversationByIdMessageErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Send a message to a conversation
+   */
+  public postApiChatConversationByIdMessage<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<PostApiChatConversationByIdMessageData, ThrowOnError>,
+  ): RequestResult<
     PostApiChatConversationByIdMessageResponses,
     PostApiChatConversationByIdMessageErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/conversation/{id}/message",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiChatConversationByIdMessageResponses,
+      PostApiChatConversationByIdMessageErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/conversation/{id}/message",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Mark a message as read in a conversation
- */
-export const postApiChatConversationByIdRead = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PostApiChatConversationByIdReadData, ThrowOnError>,
-): RequestResult<
-  PostApiChatConversationByIdReadResponses,
-  PostApiChatConversationByIdReadErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Mark a message as read in a conversation
+   */
+  public postApiChatConversationByIdRead<ThrowOnError extends boolean = false>(
+    options: Options<PostApiChatConversationByIdReadData, ThrowOnError>,
+  ): RequestResult<
     PostApiChatConversationByIdReadResponses,
     PostApiChatConversationByIdReadErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/conversation/{id}/read",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiChatConversationByIdReadResponses,
+      PostApiChatConversationByIdReadErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/conversation/{id}/read",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Remove a reaction from a message
- */
-export const deleteApiChatMessageByIdReaction = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<DeleteApiChatMessageByIdReactionData, ThrowOnError>,
-): RequestResult<
-  DeleteApiChatMessageByIdReactionResponses,
-  DeleteApiChatMessageByIdReactionErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Remove a reaction from a message
+   */
+  public deleteApiChatMessageByIdReaction<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiChatMessageByIdReactionData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiChatMessageByIdReactionResponses,
     DeleteApiChatMessageByIdReactionErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/message/{id}/reaction",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiChatMessageByIdReactionResponses,
+      DeleteApiChatMessageByIdReactionErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/message/{id}/reaction",
+      ...options,
+    });
+  }
 
-/**
- * Add a reaction to a message
- */
-export const postApiChatMessageByIdReaction = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PostApiChatMessageByIdReactionData, ThrowOnError>,
-): RequestResult<
-  PostApiChatMessageByIdReactionResponses,
-  PostApiChatMessageByIdReactionErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Add a reaction to a message
+   */
+  public postApiChatMessageByIdReaction<ThrowOnError extends boolean = false>(
+    options: Options<PostApiChatMessageByIdReactionData, ThrowOnError>,
+  ): RequestResult<
     PostApiChatMessageByIdReactionResponses,
     PostApiChatMessageByIdReactionErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/message/{id}/reaction",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiChatMessageByIdReactionResponses,
+      PostApiChatMessageByIdReactionErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/message/{id}/reaction",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Set mute status for a conversation
- */
-export const patchApiChatConversationByIdMute = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PatchApiChatConversationByIdMuteData, ThrowOnError>,
-): RequestResult<
-  PatchApiChatConversationByIdMuteResponses,
-  PatchApiChatConversationByIdMuteErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).patch<
+  /**
+   * Set mute status for a conversation
+   */
+  public patchApiChatConversationByIdMute<ThrowOnError extends boolean = false>(
+    options: Options<PatchApiChatConversationByIdMuteData, ThrowOnError>,
+  ): RequestResult<
     PatchApiChatConversationByIdMuteResponses,
     PatchApiChatConversationByIdMuteErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/conversation/{id}/mute",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).patch<
+      PatchApiChatConversationByIdMuteResponses,
+      PatchApiChatConversationByIdMuteErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/conversation/{id}/mute",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Set typing status for a conversation
- */
-export const postApiChatConversationByIdTyping = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PostApiChatConversationByIdTypingData, ThrowOnError>,
-): RequestResult<
-  PostApiChatConversationByIdTypingResponses,
-  PostApiChatConversationByIdTypingErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Set typing status for a conversation
+   */
+  public postApiChatConversationByIdTyping<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<PostApiChatConversationByIdTypingData, ThrowOnError>,
+  ): RequestResult<
     PostApiChatConversationByIdTypingResponses,
     PostApiChatConversationByIdTypingErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/conversation/{id}/typing",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiChatConversationByIdTypingResponses,
+      PostApiChatConversationByIdTypingErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/conversation/{id}/typing",
+      ...options,
+    });
+  }
 
-/**
- * Set typing status for a post
- */
-export const postApiPostByIdTyping = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiPostByIdTypingData, ThrowOnError>,
-): RequestResult<
-  PostApiPostByIdTypingResponses,
-  PostApiPostByIdTypingErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Set typing status for a post
+   */
+  public postApiPostByIdTyping<ThrowOnError extends boolean = false>(
+    options: Options<PostApiPostByIdTypingData, ThrowOnError>,
+  ): RequestResult<
     PostApiPostByIdTypingResponses,
     PostApiPostByIdTypingErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/typing",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiPostByIdTypingResponses,
+      PostApiPostByIdTypingErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/typing",
+      ...options,
+    });
+  }
 
-/**
- * Get presence status for users
- */
-export const getApiChatPresence = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiChatPresenceData, ThrowOnError>,
-): RequestResult<
-  GetApiChatPresenceResponses,
-  GetApiChatPresenceErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get presence status for users
+   */
+  public getApiChatPresence<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiChatPresenceData, ThrowOnError>,
+  ): RequestResult<
     GetApiChatPresenceResponses,
     GetApiChatPresenceErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/presence",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiChatPresenceResponses,
+      GetApiChatPresenceErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/presence",
+      ...options,
+    });
+  }
 
-/**
- * Get token for Centrifugo
- */
-export const postApiChatCentrifugoToken = <
-  ThrowOnError extends boolean = false,
->(
-  options?: Options<PostApiChatCentrifugoTokenData, ThrowOnError>,
-): RequestResult<
-  PostApiChatCentrifugoTokenResponses,
-  PostApiChatCentrifugoTokenErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).post<
+  /**
+   * Get token for Centrifugo
+   */
+  public postApiChatCentrifugoToken<ThrowOnError extends boolean = false>(
+    options?: Options<PostApiChatCentrifugoTokenData, ThrowOnError>,
+  ): RequestResult<
     PostApiChatCentrifugoTokenResponses,
     PostApiChatCentrifugoTokenErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/centrifugo/token",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).post<
+      PostApiChatCentrifugoTokenResponses,
+      PostApiChatCentrifugoTokenErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/centrifugo/token",
+      ...options,
+    });
+  }
 
-/**
- * Subscribe to Centrifugo
- */
-export const postApiChatCentrifugoSubscribe = <
-  ThrowOnError extends boolean = false,
->(
-  options?: Options<PostApiChatCentrifugoSubscribeData, ThrowOnError>,
-): RequestResult<
-  PostApiChatCentrifugoSubscribeResponses,
-  PostApiChatCentrifugoSubscribeErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).post<
+  /**
+   * Subscribe to Centrifugo
+   */
+  public postApiChatCentrifugoSubscribe<ThrowOnError extends boolean = false>(
+    options?: Options<PostApiChatCentrifugoSubscribeData, ThrowOnError>,
+  ): RequestResult<
     PostApiChatCentrifugoSubscribeResponses,
     PostApiChatCentrifugoSubscribeErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/chat/centrifugo/subscribe",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).post<
+      PostApiChatCentrifugoSubscribeResponses,
+      PostApiChatCentrifugoSubscribeErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/chat/centrifugo/subscribe",
+      ...options,
+    });
+  }
 
-/**
- * Get post comments
- */
-export const getApiPostByPostIdComments = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiPostByPostIdCommentsData, ThrowOnError>,
-): RequestResult<
-  GetApiPostByPostIdCommentsResponses,
-  GetApiPostByPostIdCommentsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get post comments
+   */
+  public getApiPostByPostIdComments<ThrowOnError extends boolean = false>(
+    options: Options<GetApiPostByPostIdCommentsData, ThrowOnError>,
+  ): RequestResult<
     GetApiPostByPostIdCommentsResponses,
     GetApiPostByPostIdCommentsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{postId}/comments",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiPostByPostIdCommentsResponses,
+      GetApiPostByPostIdCommentsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{postId}/comments",
+      ...options,
+    });
+  }
 
-/**
- * Create post comment
- */
-export const postApiPostByPostIdComments = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PostApiPostByPostIdCommentsData, ThrowOnError>,
-): RequestResult<
-  PostApiPostByPostIdCommentsResponses,
-  PostApiPostByPostIdCommentsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Create post comment
+   */
+  public postApiPostByPostIdComments<ThrowOnError extends boolean = false>(
+    options: Options<PostApiPostByPostIdCommentsData, ThrowOnError>,
+  ): RequestResult<
     PostApiPostByPostIdCommentsResponses,
     PostApiPostByPostIdCommentsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{postId}/comments",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiPostByPostIdCommentsResponses,
+      PostApiPostByPostIdCommentsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{postId}/comments",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Get comment replies
- */
-export const getApiCommentByIdReplies = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiCommentByIdRepliesData, ThrowOnError>,
-): RequestResult<
-  GetApiCommentByIdRepliesResponses,
-  GetApiCommentByIdRepliesErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get comment replies
+   */
+  public getApiCommentByIdReplies<ThrowOnError extends boolean = false>(
+    options: Options<GetApiCommentByIdRepliesData, ThrowOnError>,
+  ): RequestResult<
     GetApiCommentByIdRepliesResponses,
     GetApiCommentByIdRepliesErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/comment/{id}/replies",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiCommentByIdRepliesResponses,
+      GetApiCommentByIdRepliesErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/comment/{id}/replies",
+      ...options,
+    });
+  }
 
-/**
- * Create comment reply
- */
-export const postApiCommentByIdReplies = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiCommentByIdRepliesData, ThrowOnError>,
-): RequestResult<
-  PostApiCommentByIdRepliesResponses,
-  PostApiCommentByIdRepliesErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Create comment reply
+   */
+  public postApiCommentByIdReplies<ThrowOnError extends boolean = false>(
+    options: Options<PostApiCommentByIdRepliesData, ThrowOnError>,
+  ): RequestResult<
     PostApiCommentByIdRepliesResponses,
     PostApiCommentByIdRepliesErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/comment/{id}/replies",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiCommentByIdRepliesResponses,
+      PostApiCommentByIdRepliesErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/comment/{id}/replies",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Delete comment
- */
-export const deleteApiCommentById = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteApiCommentByIdData, ThrowOnError>,
-): RequestResult<
-  DeleteApiCommentByIdResponses,
-  DeleteApiCommentByIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Delete comment
+   */
+  public deleteApiCommentById<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiCommentByIdData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiCommentByIdResponses,
     DeleteApiCommentByIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/comment/{id}",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiCommentByIdResponses,
+      DeleteApiCommentByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/comment/{id}",
+      ...options,
+    });
+  }
 
-/**
- * Update comment
- */
-export const patchApiCommentById = <ThrowOnError extends boolean = false>(
-  options: Options<PatchApiCommentByIdData, ThrowOnError>,
-): RequestResult<
-  PatchApiCommentByIdResponses,
-  PatchApiCommentByIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).patch<
+  /**
+   * Update comment
+   */
+  public patchApiCommentById<ThrowOnError extends boolean = false>(
+    options: Options<PatchApiCommentByIdData, ThrowOnError>,
+  ): RequestResult<
     PatchApiCommentByIdResponses,
     PatchApiCommentByIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/comment/{id}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).patch<
+      PatchApiCommentByIdResponses,
+      PatchApiCommentByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/comment/{id}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Get support tickets
- */
-export const getApiContactSupport = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiContactSupportData, ThrowOnError>,
-): RequestResult<
-  GetApiContactSupportResponses,
-  GetApiContactSupportErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get support tickets
+   */
+  public getApiContactSupport<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiContactSupportData, ThrowOnError>,
+  ): RequestResult<
     GetApiContactSupportResponses,
     GetApiContactSupportErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/contact-support",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiContactSupportResponses,
+      GetApiContactSupportErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/contact-support",
+      ...options,
+    });
+  }
 
-/**
- * Create support request
- */
-export const postApiContactSupport = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiContactSupportData, ThrowOnError>,
-): RequestResult<
-  PostApiContactSupportResponses,
-  PostApiContactSupportErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Create support request
+   */
+  public postApiContactSupport<ThrowOnError extends boolean = false>(
+    options: Options<PostApiContactSupportData, ThrowOnError>,
+  ): RequestResult<
     PostApiContactSupportResponses,
     PostApiContactSupportErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/contact-support",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiContactSupportResponses,
+      PostApiContactSupportErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/contact-support",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Update support ticket status
- */
-export const patchApiContactSupportByIdStatus = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PatchApiContactSupportByIdStatusData, ThrowOnError>,
-): RequestResult<
-  PatchApiContactSupportByIdStatusResponses,
-  PatchApiContactSupportByIdStatusErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).patch<
+  /**
+   * Update support ticket status
+   */
+  public patchApiContactSupportByIdStatus<ThrowOnError extends boolean = false>(
+    options: Options<PatchApiContactSupportByIdStatusData, ThrowOnError>,
+  ): RequestResult<
     PatchApiContactSupportByIdStatusResponses,
     PatchApiContactSupportByIdStatusErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/contact-support/{id}/status",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).patch<
+      PatchApiContactSupportByIdStatusResponses,
+      PatchApiContactSupportByIdStatusErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/contact-support/{id}/status",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Get support ticket by ID
- */
-export const getApiContactSupportById = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiContactSupportByIdData, ThrowOnError>,
-): RequestResult<
-  GetApiContactSupportByIdResponses,
-  GetApiContactSupportByIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get support ticket by ID
+   */
+  public getApiContactSupportById<ThrowOnError extends boolean = false>(
+    options: Options<GetApiContactSupportByIdData, ThrowOnError>,
+  ): RequestResult<
     GetApiContactSupportByIdResponses,
     GetApiContactSupportByIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/contact-support/{id}",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiContactSupportByIdResponses,
+      GetApiContactSupportByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/contact-support/{id}",
+      ...options,
+    });
+  }
 
-/**
- * Get list of published courses
- */
-export const getApiCourse = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiCourseData, ThrowOnError>,
-): RequestResult<GetApiCourseResponses, GetApiCourseErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiCourseResponses,
-    GetApiCourseErrors,
-    ThrowOnError
-  >({ url: "/api/course", ...options });
+  /**
+   * Get list of published courses
+   */
+  public getApiCourse<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiCourseData, ThrowOnError>,
+  ): RequestResult<GetApiCourseResponses, GetApiCourseErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiCourseResponses,
+      GetApiCourseErrors,
+      ThrowOnError
+    >({ url: "/api/course", ...options });
+  }
 
-/**
- * Get courses enrolled or created by current user
- */
-export const getApiCourseMy = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiCourseMyData, ThrowOnError>,
-): RequestResult<GetApiCourseMyResponses, GetApiCourseMyErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
+  /**
+   * Get courses enrolled or created by current user
+   */
+  public getApiCourseMy<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiCourseMyData, ThrowOnError>,
+  ): RequestResult<
     GetApiCourseMyResponses,
     GetApiCourseMyErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/course/my",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiCourseMyResponses,
+      GetApiCourseMyErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/course/my",
+      ...options,
+    });
+  }
 
-/**
- * Get course details by slug or ID
- */
-export const getApiCourseBySlug = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiCourseBySlugData, ThrowOnError>,
-): RequestResult<
-  GetApiCourseBySlugResponses,
-  GetApiCourseBySlugErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get course details by slug or ID
+   */
+  public getApiCourseBySlug<ThrowOnError extends boolean = false>(
+    options: Options<GetApiCourseBySlugData, ThrowOnError>,
+  ): RequestResult<
     GetApiCourseBySlugResponses,
     GetApiCourseBySlugErrors,
     ThrowOnError
-  >({ url: "/api/course/{slug}", ...options });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiCourseBySlugResponses,
+      GetApiCourseBySlugErrors,
+      ThrowOnError
+    >({ url: "/api/course/{slug}", ...options });
+  }
 
-/**
- * Join / enroll in a course
- */
-export const postApiCourseBySlugJoin = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiCourseBySlugJoinData, ThrowOnError>,
-): RequestResult<
-  PostApiCourseBySlugJoinResponses,
-  PostApiCourseBySlugJoinErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Join / enroll in a course
+   */
+  public postApiCourseBySlugJoin<ThrowOnError extends boolean = false>(
+    options: Options<PostApiCourseBySlugJoinData, ThrowOnError>,
+  ): RequestResult<
     PostApiCourseBySlugJoinResponses,
     PostApiCourseBySlugJoinErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/course/{slug}/join",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiCourseBySlugJoinResponses,
+      PostApiCourseBySlugJoinErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/course/{slug}/join",
+      ...options,
+    });
+  }
 
-/**
- * Leave an enrolled course
- */
-export const postApiCourseBySlugLeave = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiCourseBySlugLeaveData, ThrowOnError>,
-): RequestResult<
-  PostApiCourseBySlugLeaveResponses,
-  PostApiCourseBySlugLeaveErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Leave an enrolled course
+   */
+  public postApiCourseBySlugLeave<ThrowOnError extends boolean = false>(
+    options: Options<PostApiCourseBySlugLeaveData, ThrowOnError>,
+  ): RequestResult<
     PostApiCourseBySlugLeaveResponses,
     PostApiCourseBySlugLeaveErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/course/{slug}/leave",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiCourseBySlugLeaveResponses,
+      PostApiCourseBySlugLeaveErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/course/{slug}/leave",
+      ...options,
+    });
+  }
 
-/**
- * Get lesson content by ID or slug
- */
-export const getApiLessonByIdOrSlug = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiLessonByIdOrSlugData, ThrowOnError>,
-): RequestResult<
-  GetApiLessonByIdOrSlugResponses,
-  GetApiLessonByIdOrSlugErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get lesson content by ID or slug
+   */
+  public getApiLessonByIdOrSlug<ThrowOnError extends boolean = false>(
+    options: Options<GetApiLessonByIdOrSlugData, ThrowOnError>,
+  ): RequestResult<
     GetApiLessonByIdOrSlugResponses,
     GetApiLessonByIdOrSlugErrors,
     ThrowOnError
-  >({ url: "/api/lesson/{idOrSlug}", ...options });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiLessonByIdOrSlugResponses,
+      GetApiLessonByIdOrSlugErrors,
+      ThrowOnError
+    >({ url: "/api/lesson/{idOrSlug}", ...options });
+  }
 
-/**
- * Update video playback position and progress for a lesson
- */
-export const postApiLessonPlaybackPosition = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PostApiLessonPlaybackPositionData, ThrowOnError>,
-): RequestResult<
-  PostApiLessonPlaybackPositionResponses,
-  PostApiLessonPlaybackPositionErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Update video playback position and progress for a lesson
+   */
+  public postApiLessonPlaybackPosition<ThrowOnError extends boolean = false>(
+    options: Options<PostApiLessonPlaybackPositionData, ThrowOnError>,
+  ): RequestResult<
     PostApiLessonPlaybackPositionResponses,
     PostApiLessonPlaybackPositionErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/lesson/playback-position",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiLessonPlaybackPositionResponses,
+      PostApiLessonPlaybackPositionErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/lesson/playback-position",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Delete video from Bunny
- */
-export const deleteApiDeleteBunnyVideoByVideoId = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<DeleteApiDeleteBunnyVideoByVideoIdData, ThrowOnError>,
-): RequestResult<
-  DeleteApiDeleteBunnyVideoByVideoIdResponses,
-  DeleteApiDeleteBunnyVideoByVideoIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Delete video from Bunny
+   */
+  public deleteApiDeleteBunnyVideoByVideoId<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<DeleteApiDeleteBunnyVideoByVideoIdData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiDeleteBunnyVideoByVideoIdResponses,
     DeleteApiDeleteBunnyVideoByVideoIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/delete-bunny-video/{videoId}",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiDeleteBunnyVideoByVideoIdResponses,
+      DeleteApiDeleteBunnyVideoByVideoIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/delete-bunny-video/{videoId}",
+      ...options,
+    });
+  }
 
-/**
- * Get events
- */
-export const getApiEvents = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiEventsData, ThrowOnError>,
-): RequestResult<GetApiEventsResponses, GetApiEventsErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiEventsResponses,
-    GetApiEventsErrors,
-    ThrowOnError
-  >({ url: "/api/events", ...options });
+  /**
+   * Get events
+   */
+  public getApiEvents<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiEventsData, ThrowOnError>,
+  ): RequestResult<GetApiEventsResponses, GetApiEventsErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiEventsResponses,
+      GetApiEventsErrors,
+      ThrowOnError
+    >({ url: "/api/events", ...options });
+  }
 
-/**
- * Get my events
- */
-export const getApiEventsMy = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiEventsMyData, ThrowOnError>,
-): RequestResult<GetApiEventsMyResponses, GetApiEventsMyErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
+  /**
+   * Get my events
+   */
+  public getApiEventsMy<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiEventsMyData, ThrowOnError>,
+  ): RequestResult<
     GetApiEventsMyResponses,
     GetApiEventsMyErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/events/my",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiEventsMyResponses,
+      GetApiEventsMyErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/events/my",
+      ...options,
+    });
+  }
 
-/**
- * Get an event by slug
- */
-export const getApiEventsBySlug = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiEventsBySlugData, ThrowOnError>,
-): RequestResult<
-  GetApiEventsBySlugResponses,
-  GetApiEventsBySlugErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get an event by slug
+   */
+  public getApiEventsBySlug<ThrowOnError extends boolean = false>(
+    options: Options<GetApiEventsBySlugData, ThrowOnError>,
+  ): RequestResult<
     GetApiEventsBySlugResponses,
     GetApiEventsBySlugErrors,
     ThrowOnError
-  >({ url: "/api/events/{slug}", ...options });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiEventsBySlugResponses,
+      GetApiEventsBySlugErrors,
+      ThrowOnError
+    >({ url: "/api/events/{slug}", ...options });
+  }
 
-/**
- * Get attendee count
- */
-export const getApiEventsByIdEventAttendeeCount = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiEventsByIdEventAttendeeCountData, ThrowOnError>,
-): RequestResult<
-  GetApiEventsByIdEventAttendeeCountResponses,
-  GetApiEventsByIdEventAttendeeCountErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get attendee count
+   */
+  public getApiEventsByIdEventAttendeeCount<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<GetApiEventsByIdEventAttendeeCountData, ThrowOnError>,
+  ): RequestResult<
     GetApiEventsByIdEventAttendeeCountResponses,
     GetApiEventsByIdEventAttendeeCountErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/events/{id}/event-attendee-count",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiEventsByIdEventAttendeeCountResponses,
+      GetApiEventsByIdEventAttendeeCountErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/events/{id}/event-attendee-count",
+      ...options,
+    });
+  }
 
-/**
- * Generate event ICS
- */
-export const getApiEventsBySlugIcs = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiEventsBySlugIcsData, ThrowOnError>,
-): RequestResult<
-  GetApiEventsBySlugIcsResponses,
-  GetApiEventsBySlugIcsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Generate event ICS
+   */
+  public getApiEventsBySlugIcs<ThrowOnError extends boolean = false>(
+    options: Options<GetApiEventsBySlugIcsData, ThrowOnError>,
+  ): RequestResult<
     GetApiEventsBySlugIcsResponses,
     GetApiEventsBySlugIcsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/events/{slug}/ics",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiEventsBySlugIcsResponses,
+      GetApiEventsBySlugIcsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/events/{slug}/ics",
+      ...options,
+    });
+  }
 
-/**
- * Join an event
- */
-export const postApiEventsBySlugJoin = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiEventsBySlugJoinData, ThrowOnError>,
-): RequestResult<
-  PostApiEventsBySlugJoinResponses,
-  PostApiEventsBySlugJoinErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Join an event
+   */
+  public postApiEventsBySlugJoin<ThrowOnError extends boolean = false>(
+    options: Options<PostApiEventsBySlugJoinData, ThrowOnError>,
+  ): RequestResult<
     PostApiEventsBySlugJoinResponses,
     PostApiEventsBySlugJoinErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/events/{slug}/join",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiEventsBySlugJoinResponses,
+      PostApiEventsBySlugJoinErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/events/{slug}/join",
+      ...options,
+    });
+  }
 
-/**
- * Get GIFs
- *
- * Get GIFs
- */
-export const getApiKlipy = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiKlipyData, ThrowOnError>,
-): RequestResult<GetApiKlipyResponses, GetApiKlipyErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiKlipyResponses,
-    GetApiKlipyErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/klipy",
-    ...options,
-  });
+  /**
+   * Get GIFs
+   *
+   * Get GIFs
+   */
+  public getApiKlipy<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiKlipyData, ThrowOnError>,
+  ): RequestResult<GetApiKlipyResponses, GetApiKlipyErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiKlipyResponses,
+      GetApiKlipyErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/klipy",
+      ...options,
+    });
+  }
 
-/**
- * Get groups
- *
- * Get groups
- */
-export const getApiGroup = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiGroupData, ThrowOnError>,
-): RequestResult<GetApiGroupResponses, GetApiGroupErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiGroupResponses,
-    GetApiGroupErrors,
-    ThrowOnError
-  >({ url: "/api/group", ...options });
+  /**
+   * Get groups
+   *
+   * Get groups
+   */
+  public getApiGroup<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiGroupData, ThrowOnError>,
+  ): RequestResult<GetApiGroupResponses, GetApiGroupErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiGroupResponses,
+      GetApiGroupErrors,
+      ThrowOnError
+    >({ url: "/api/group", ...options });
+  }
 
-/**
- * Get my groups
- *
- * Get my groups
- */
-export const getApiGroupMy = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiGroupMyData, ThrowOnError>,
-): RequestResult<GetApiGroupMyResponses, GetApiGroupMyErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiGroupMyResponses,
-    GetApiGroupMyErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/group/my",
-    ...options,
-  });
+  /**
+   * Get my groups
+   *
+   * Get my groups
+   */
+  public getApiGroupMy<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiGroupMyData, ThrowOnError>,
+  ): RequestResult<GetApiGroupMyResponses, GetApiGroupMyErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiGroupMyResponses,
+      GetApiGroupMyErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/group/my",
+      ...options,
+    });
+  }
 
-/**
- * Get group by slug
- *
- * Get group by slug
- */
-export const getApiGroupBySlug = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiGroupBySlugData, ThrowOnError>,
-): RequestResult<
-  GetApiGroupBySlugResponses,
-  GetApiGroupBySlugErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get group by slug
+   *
+   * Get group by slug
+   */
+  public getApiGroupBySlug<ThrowOnError extends boolean = false>(
+    options: Options<GetApiGroupBySlugData, ThrowOnError>,
+  ): RequestResult<
     GetApiGroupBySlugResponses,
     GetApiGroupBySlugErrors,
     ThrowOnError
-  >({ url: "/api/group/{slug}", ...options });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiGroupBySlugResponses,
+      GetApiGroupBySlugErrors,
+      ThrowOnError
+    >({ url: "/api/group/{slug}", ...options });
+  }
 
-/**
- * Get group members
- *
- * Get group members
- */
-export const getApiGroupBySlugMembers = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiGroupBySlugMembersData, ThrowOnError>,
-): RequestResult<
-  GetApiGroupBySlugMembersResponses,
-  GetApiGroupBySlugMembersErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get group members
+   *
+   * Get group members
+   */
+  public getApiGroupBySlugMembers<ThrowOnError extends boolean = false>(
+    options: Options<GetApiGroupBySlugMembersData, ThrowOnError>,
+  ): RequestResult<
     GetApiGroupBySlugMembersResponses,
     GetApiGroupBySlugMembersErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/group/{slug}/members",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiGroupBySlugMembersResponses,
+      GetApiGroupBySlugMembersErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/group/{slug}/members",
+      ...options,
+    });
+  }
 
-/**
- * Get group posts
- *
- * Get group posts
- */
-export const getApiGroupBySlugPosts = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiGroupBySlugPostsData, ThrowOnError>,
-): RequestResult<
-  GetApiGroupBySlugPostsResponses,
-  GetApiGroupBySlugPostsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get group posts
+   *
+   * Get group posts
+   */
+  public getApiGroupBySlugPosts<ThrowOnError extends boolean = false>(
+    options: Options<GetApiGroupBySlugPostsData, ThrowOnError>,
+  ): RequestResult<
     GetApiGroupBySlugPostsResponses,
     GetApiGroupBySlugPostsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/group/{slug}/posts",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiGroupBySlugPostsResponses,
+      GetApiGroupBySlugPostsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/group/{slug}/posts",
+      ...options,
+    });
+  }
 
-/**
- * Get group media
- *
- * Get group media
- */
-export const getApiGroupBySlugMedia = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiGroupBySlugMediaData, ThrowOnError>,
-): RequestResult<
-  GetApiGroupBySlugMediaResponses,
-  GetApiGroupBySlugMediaErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get group media
+   *
+   * Get group media
+   */
+  public getApiGroupBySlugMedia<ThrowOnError extends boolean = false>(
+    options: Options<GetApiGroupBySlugMediaData, ThrowOnError>,
+  ): RequestResult<
     GetApiGroupBySlugMediaResponses,
     GetApiGroupBySlugMediaErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/group/{slug}/media",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiGroupBySlugMediaResponses,
+      GetApiGroupBySlugMediaErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/group/{slug}/media",
+      ...options,
+    });
+  }
 
-/**
- * Get group resources
- *
- * Get group resources
- */
-export const getApiGroupBySlugResources = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiGroupBySlugResourcesData, ThrowOnError>,
-): RequestResult<
-  GetApiGroupBySlugResourcesResponses,
-  GetApiGroupBySlugResourcesErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get group resources
+   *
+   * Get group resources
+   */
+  public getApiGroupBySlugResources<ThrowOnError extends boolean = false>(
+    options: Options<GetApiGroupBySlugResourcesData, ThrowOnError>,
+  ): RequestResult<
     GetApiGroupBySlugResourcesResponses,
     GetApiGroupBySlugResourcesErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/group/{slug}/resources",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiGroupBySlugResourcesResponses,
+      GetApiGroupBySlugResourcesErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/group/{slug}/resources",
+      ...options,
+    });
+  }
 
-/**
- * Join group
- *
- * Join group
- */
-export const postApiGroupBySlugJoin = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiGroupBySlugJoinData, ThrowOnError>,
-): RequestResult<
-  PostApiGroupBySlugJoinResponses,
-  PostApiGroupBySlugJoinErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Join group
+   *
+   * Join group
+   */
+  public postApiGroupBySlugJoin<ThrowOnError extends boolean = false>(
+    options: Options<PostApiGroupBySlugJoinData, ThrowOnError>,
+  ): RequestResult<
     PostApiGroupBySlugJoinResponses,
     PostApiGroupBySlugJoinErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/group/{slug}/join",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiGroupBySlugJoinResponses,
+      PostApiGroupBySlugJoinErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/group/{slug}/join",
+      ...options,
+    });
+  }
 
-/**
- * Leave group
- *
- * Leave group
- */
-export const postApiGroupBySlugLeave = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiGroupBySlugLeaveData, ThrowOnError>,
-): RequestResult<
-  PostApiGroupBySlugLeaveResponses,
-  PostApiGroupBySlugLeaveErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Leave group
+   *
+   * Leave group
+   */
+  public postApiGroupBySlugLeave<ThrowOnError extends boolean = false>(
+    options: Options<PostApiGroupBySlugLeaveData, ThrowOnError>,
+  ): RequestResult<
     PostApiGroupBySlugLeaveResponses,
     PostApiGroupBySlugLeaveErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/group/{slug}/leave",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiGroupBySlugLeaveResponses,
+      PostApiGroupBySlugLeaveErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/group/{slug}/leave",
+      ...options,
+    });
+  }
 
-/**
- * Get all members
- *
- * Get all members
- */
-export const getApiMembers = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiMembersData, ThrowOnError>,
-): RequestResult<GetApiMembersResponses, GetApiMembersErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiMembersResponses,
-    GetApiMembersErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members",
-    ...options,
-  });
+  /**
+   * Get all members
+   *
+   * Get all members
+   */
+  public getApiMembers<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiMembersData, ThrowOnError>,
+  ): RequestResult<GetApiMembersResponses, GetApiMembersErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiMembersResponses,
+      GetApiMembersErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members",
+      ...options,
+    });
+  }
 
-/**
- * Get recently active members
- *
- * Get recently active members
- */
-export const getApiMembersRecentlyActive = <
-  ThrowOnError extends boolean = false,
->(
-  options?: Options<GetApiMembersRecentlyActiveData, ThrowOnError>,
-): RequestResult<
-  GetApiMembersRecentlyActiveResponses,
-  GetApiMembersRecentlyActiveErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get recently active members
+   *
+   * Get recently active members
+   */
+  public getApiMembersRecentlyActive<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiMembersRecentlyActiveData, ThrowOnError>,
+  ): RequestResult<
     GetApiMembersRecentlyActiveResponses,
     GetApiMembersRecentlyActiveErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members/recently-active",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiMembersRecentlyActiveResponses,
+      GetApiMembersRecentlyActiveErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members/recently-active",
+      ...options,
+    });
+  }
 
-/**
- * Get mutual connection counts
- *
- * Get mutual connection counts
- */
-export const getApiMembersMutualConnections = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiMembersMutualConnectionsData, ThrowOnError>,
-): RequestResult<
-  GetApiMembersMutualConnectionsResponses,
-  GetApiMembersMutualConnectionsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get mutual connection counts
+   *
+   * Get mutual connection counts
+   */
+  public getApiMembersMutualConnections<ThrowOnError extends boolean = false>(
+    options: Options<GetApiMembersMutualConnectionsData, ThrowOnError>,
+  ): RequestResult<
     GetApiMembersMutualConnectionsResponses,
     GetApiMembersMutualConnectionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members/mutual-connections",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiMembersMutualConnectionsResponses,
+      GetApiMembersMutualConnectionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members/mutual-connections",
+      ...options,
+    });
+  }
 
-/**
- * Get mutual connection details
- *
- * Get mutual connection details
- */
-export const getApiMembersMutualConnectionsByUserIdDetails = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<
-    GetApiMembersMutualConnectionsByUserIdDetailsData,
-    ThrowOnError
-  >,
-): RequestResult<
-  GetApiMembersMutualConnectionsByUserIdDetailsResponses,
-  GetApiMembersMutualConnectionsByUserIdDetailsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get mutual connection details
+   *
+   * Get mutual connection details
+   */
+  public getApiMembersMutualConnectionsByUserIdDetails<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<
+      GetApiMembersMutualConnectionsByUserIdDetailsData,
+      ThrowOnError
+    >,
+  ): RequestResult<
     GetApiMembersMutualConnectionsByUserIdDetailsResponses,
     GetApiMembersMutualConnectionsByUserIdDetailsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members/mutual-connections/{userId}/details",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiMembersMutualConnectionsByUserIdDetailsResponses,
+      GetApiMembersMutualConnectionsByUserIdDetailsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members/mutual-connections/{userId}/details",
+      ...options,
+    });
+  }
 
-/**
- * Get member suggestions
- *
- * Get member suggestions
- */
-export const getApiMembersSuggestions = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiMembersSuggestionsData, ThrowOnError>,
-): RequestResult<
-  GetApiMembersSuggestionsResponses,
-  GetApiMembersSuggestionsErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get member suggestions
+   *
+   * Get member suggestions
+   */
+  public getApiMembersSuggestions<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiMembersSuggestionsData, ThrowOnError>,
+  ): RequestResult<
     GetApiMembersSuggestionsResponses,
     GetApiMembersSuggestionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members/suggestions",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiMembersSuggestionsResponses,
+      GetApiMembersSuggestionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members/suggestions",
+      ...options,
+    });
+  }
 
-/**
- * Get member requests
- *
- * Get member requests
- */
-export const getApiMembersRequests = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiMembersRequestsData, ThrowOnError>,
-): RequestResult<
-  GetApiMembersRequestsResponses,
-  GetApiMembersRequestsErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get member requests
+   *
+   * Get member requests
+   */
+  public getApiMembersRequests<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiMembersRequestsData, ThrowOnError>,
+  ): RequestResult<
     GetApiMembersRequestsResponses,
     GetApiMembersRequestsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members/requests",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiMembersRequestsResponses,
+      GetApiMembersRequestsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members/requests",
+      ...options,
+    });
+  }
 
-/**
- * Get member stats
- *
- * Get member stats
- */
-export const getApiMembersStats = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiMembersStatsData, ThrowOnError>,
-): RequestResult<
-  GetApiMembersStatsResponses,
-  GetApiMembersStatsErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get member stats
+   *
+   * Get member stats
+   */
+  public getApiMembersStats<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiMembersStatsData, ThrowOnError>,
+  ): RequestResult<
     GetApiMembersStatsResponses,
     GetApiMembersStatsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members/stats",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiMembersStatsResponses,
+      GetApiMembersStatsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members/stats",
+      ...options,
+    });
+  }
 
-/**
- * Get member posts
- *
- * Get member posts
- */
-export const getApiMembersByUsernamePosts = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiMembersByUsernamePostsData, ThrowOnError>,
-): RequestResult<
-  GetApiMembersByUsernamePostsResponses,
-  GetApiMembersByUsernamePostsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get member posts
+   *
+   * Get member posts
+   */
+  public getApiMembersByUsernamePosts<ThrowOnError extends boolean = false>(
+    options: Options<GetApiMembersByUsernamePostsData, ThrowOnError>,
+  ): RequestResult<
     GetApiMembersByUsernamePostsResponses,
     GetApiMembersByUsernamePostsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members/{username}/posts",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiMembersByUsernamePostsResponses,
+      GetApiMembersByUsernamePostsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members/{username}/posts",
+      ...options,
+    });
+  }
 
-/**
- * Get member connections
- *
- * Get member connections
- */
-export const getApiMembersByUsernameConnections = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiMembersByUsernameConnectionsData, ThrowOnError>,
-): RequestResult<
-  GetApiMembersByUsernameConnectionsResponses,
-  GetApiMembersByUsernameConnectionsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get member connections
+   *
+   * Get member connections
+   */
+  public getApiMembersByUsernameConnections<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<GetApiMembersByUsernameConnectionsData, ThrowOnError>,
+  ): RequestResult<
     GetApiMembersByUsernameConnectionsResponses,
     GetApiMembersByUsernameConnectionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members/{username}/connections",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiMembersByUsernameConnectionsResponses,
+      GetApiMembersByUsernameConnectionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members/{username}/connections",
+      ...options,
+    });
+  }
 
-/**
- * Get member by username
- *
- * Get member by username
- */
-export const getApiMembersByUsername = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiMembersByUsernameData, ThrowOnError>,
-): RequestResult<
-  GetApiMembersByUsernameResponses,
-  GetApiMembersByUsernameErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get member by username
+   *
+   * Get member by username
+   */
+  public getApiMembersByUsername<ThrowOnError extends boolean = false>(
+    options: Options<GetApiMembersByUsernameData, ThrowOnError>,
+  ): RequestResult<
     GetApiMembersByUsernameResponses,
     GetApiMembersByUsernameErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/members/{username}",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiMembersByUsernameResponses,
+      GetApiMembersByUsernameErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/members/{username}",
+      ...options,
+    });
+  }
 
-/**
- * Get mention suggestions
- *
- * Get mention suggestions
- */
-export const getApiMentions = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiMentionsData, ThrowOnError>,
-): RequestResult<GetApiMentionsResponses, GetApiMentionsErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
+  /**
+   * Get mention suggestions
+   *
+   * Get mention suggestions
+   */
+  public getApiMentions<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiMentionsData, ThrowOnError>,
+  ): RequestResult<
     GetApiMentionsResponses,
     GetApiMentionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/mentions",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiMentionsResponses,
+      GetApiMentionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/mentions",
+      ...options,
+    });
+  }
 
-/**
- * Erase GDPR data
- *
- * Erase GDPR data for the logged-in user
- */
-export const postApiGdprEraseMember = <ThrowOnError extends boolean = false>(
-  options?: Options<PostApiGdprEraseMemberData, ThrowOnError>,
-): RequestResult<
-  PostApiGdprEraseMemberResponses,
-  PostApiGdprEraseMemberErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).post<
+  /**
+   * Erase GDPR data
+   *
+   * Erase GDPR data for the logged-in user
+   */
+  public postApiGdprEraseMember<ThrowOnError extends boolean = false>(
+    options?: Options<PostApiGdprEraseMemberData, ThrowOnError>,
+  ): RequestResult<
     PostApiGdprEraseMemberResponses,
     PostApiGdprEraseMemberErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/gdpr/erase-member",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).post<
+      PostApiGdprEraseMemberResponses,
+      PostApiGdprEraseMemberErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/gdpr/erase-member",
+      ...options,
+    });
+  }
 
-/**
- * Export GDPR data
- *
- * Export GDPR data for the logged-in user
- */
-export const getApiGdprExportMember = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiGdprExportMemberData, ThrowOnError>,
-): RequestResult<
-  GetApiGdprExportMemberResponses,
-  GetApiGdprExportMemberErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Export GDPR data
+   *
+   * Export GDPR data for the logged-in user
+   */
+  public getApiGdprExportMember<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiGdprExportMemberData, ThrowOnError>,
+  ): RequestResult<
     GetApiGdprExportMemberResponses,
     GetApiGdprExportMemberErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/gdpr/export-member",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiGdprExportMemberResponses,
+      GetApiGdprExportMemberErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/gdpr/export-member",
+      ...options,
+    });
+  }
 
-/**
- * Get plans
- */
-export const getApiPlans = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiPlansData, ThrowOnError>,
-): RequestResult<GetApiPlansResponses, unknown, ThrowOnError> =>
-  (options?.client ?? client).get<GetApiPlansResponses, unknown, ThrowOnError>({
-    url: "/api/plans",
-    ...options,
-  });
+  /**
+   * Get plans
+   */
+  public getApiPlans<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiPlansData, ThrowOnError>,
+  ): RequestResult<GetApiPlansResponses, unknown, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiPlansResponses,
+      unknown,
+      ThrowOnError
+    >({ url: "/api/plans", ...options });
+  }
 
-/**
- * Delete post
- */
-export const deleteApiPostById = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteApiPostByIdData, ThrowOnError>,
-): RequestResult<
-  DeleteApiPostByIdResponses,
-  DeleteApiPostByIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Delete post
+   */
+  public deleteApiPostById<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiPostByIdData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiPostByIdResponses,
     DeleteApiPostByIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiPostByIdResponses,
+      DeleteApiPostByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}",
+      ...options,
+    });
+  }
 
-/**
- * Get post by id
- */
-export const getApiPostById = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiPostByIdData, ThrowOnError>,
-): RequestResult<GetApiPostByIdResponses, GetApiPostByIdErrors, ThrowOnError> =>
-  (options.client ?? client).get<
+  /**
+   * Get post by id
+   */
+  public getApiPostById<ThrowOnError extends boolean = false>(
+    options: Options<GetApiPostByIdData, ThrowOnError>,
+  ): RequestResult<
     GetApiPostByIdResponses,
     GetApiPostByIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiPostByIdResponses,
+      GetApiPostByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}",
+      ...options,
+    });
+  }
 
-/**
- * Update post
- */
-export const patchApiPostById = <ThrowOnError extends boolean = false>(
-  options: Options<PatchApiPostByIdData, ThrowOnError>,
-): RequestResult<
-  PatchApiPostByIdResponses,
-  PatchApiPostByIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).patch<
+  /**
+   * Update post
+   */
+  public patchApiPostById<ThrowOnError extends boolean = false>(
+    options: Options<PatchApiPostByIdData, ThrowOnError>,
+  ): RequestResult<
     PatchApiPostByIdResponses,
     PatchApiPostByIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).patch<
+      PatchApiPostByIdResponses,
+      PatchApiPostByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Get public post metadata by id
- */
-export const getApiPostPublicMetaById = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiPostPublicMetaByIdData, ThrowOnError>,
-): RequestResult<
-  GetApiPostPublicMetaByIdResponses,
-  GetApiPostPublicMetaByIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get public post metadata by id
+   */
+  public getApiPostPublicMetaById<ThrowOnError extends boolean = false>(
+    options: Options<GetApiPostPublicMetaByIdData, ThrowOnError>,
+  ): RequestResult<
     GetApiPostPublicMetaByIdResponses,
     GetApiPostPublicMetaByIdErrors,
     ThrowOnError
-  >({ url: "/api/post/public-meta/{id}", ...options });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiPostPublicMetaByIdResponses,
+      GetApiPostPublicMetaByIdErrors,
+      ThrowOnError
+    >({ url: "/api/post/public-meta/{id}", ...options });
+  }
 
-/**
- * Get saved posts
- */
-export const getApiSavedPosts = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiSavedPostsData, ThrowOnError>,
-): RequestResult<
-  GetApiSavedPostsResponses,
-  GetApiSavedPostsErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get saved posts
+   */
+  public getApiSavedPosts<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiSavedPostsData, ThrowOnError>,
+  ): RequestResult<
     GetApiSavedPostsResponses,
     GetApiSavedPostsErrors,
     ThrowOnError
-  >({
-    querySerializer: { parameters: { filter: { object: { style: "form" } } } },
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/saved-posts",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiSavedPostsResponses,
+      GetApiSavedPostsErrors,
+      ThrowOnError
+    >({
+      querySerializer: {
+        parameters: { filter: { object: { style: "form" } } },
+      },
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/saved-posts",
+      ...options,
+    });
+  }
 
-/**
- * Create post
- */
-export const postApiPost = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiPostData, ThrowOnError>,
-): RequestResult<PostApiPostResponses, PostApiPostErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    PostApiPostResponses,
-    PostApiPostErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  /**
+   * Create post
+   */
+  public postApiPost<ThrowOnError extends boolean = false>(
+    options: Options<PostApiPostData, ThrowOnError>,
+  ): RequestResult<PostApiPostResponses, PostApiPostErrors, ThrowOnError> {
+    return (options.client ?? this.client).post<
+      PostApiPostResponses,
+      PostApiPostErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Unmute post
- */
-export const deleteApiPostByIdMute = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteApiPostByIdMuteData, ThrowOnError>,
-): RequestResult<
-  DeleteApiPostByIdMuteResponses,
-  DeleteApiPostByIdMuteErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Unmute post
+   */
+  public deleteApiPostByIdMute<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiPostByIdMuteData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiPostByIdMuteResponses,
     DeleteApiPostByIdMuteErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/mute",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiPostByIdMuteResponses,
+      DeleteApiPostByIdMuteErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/mute",
+      ...options,
+    });
+  }
 
-/**
- * Mute post
- */
-export const postApiPostByIdMute = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiPostByIdMuteData, ThrowOnError>,
-): RequestResult<
-  PostApiPostByIdMuteResponses,
-  PostApiPostByIdMuteErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Mute post
+   */
+  public postApiPostByIdMute<ThrowOnError extends boolean = false>(
+    options: Options<PostApiPostByIdMuteData, ThrowOnError>,
+  ): RequestResult<
     PostApiPostByIdMuteResponses,
     PostApiPostByIdMuteErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/mute",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiPostByIdMuteResponses,
+      PostApiPostByIdMuteErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/mute",
+      ...options,
+    });
+  }
 
-/**
- * Remove post
- */
-export const postApiPostByIdRemove = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiPostByIdRemoveData, ThrowOnError>,
-): RequestResult<
-  PostApiPostByIdRemoveResponses,
-  PostApiPostByIdRemoveErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Remove post
+   */
+  public postApiPostByIdRemove<ThrowOnError extends boolean = false>(
+    options: Options<PostApiPostByIdRemoveData, ThrowOnError>,
+  ): RequestResult<
     PostApiPostByIdRemoveResponses,
     PostApiPostByIdRemoveErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/remove",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiPostByIdRemoveResponses,
+      PostApiPostByIdRemoveErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/remove",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Unpin post
- */
-export const deleteApiPostByIdPin = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteApiPostByIdPinData, ThrowOnError>,
-): RequestResult<
-  DeleteApiPostByIdPinResponses,
-  DeleteApiPostByIdPinErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Unpin post
+   */
+  public deleteApiPostByIdPin<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiPostByIdPinData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiPostByIdPinResponses,
     DeleteApiPostByIdPinErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/pin",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiPostByIdPinResponses,
+      DeleteApiPostByIdPinErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/pin",
+      ...options,
+    });
+  }
 
-/**
- * Pin post
- */
-export const postApiPostByIdPin = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiPostByIdPinData, ThrowOnError>,
-): RequestResult<
-  PostApiPostByIdPinResponses,
-  PostApiPostByIdPinErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Pin post
+   */
+  public postApiPostByIdPin<ThrowOnError extends boolean = false>(
+    options: Options<PostApiPostByIdPinData, ThrowOnError>,
+  ): RequestResult<
     PostApiPostByIdPinResponses,
     PostApiPostByIdPinErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/pin",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiPostByIdPinResponses,
+      PostApiPostByIdPinErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/pin",
+      ...options,
+    });
+  }
 
-/**
- * Unsave post
- */
-export const deleteApiPostByIdSave = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteApiPostByIdSaveData, ThrowOnError>,
-): RequestResult<
-  DeleteApiPostByIdSaveResponses,
-  DeleteApiPostByIdSaveErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Unsave post
+   */
+  public deleteApiPostByIdSave<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiPostByIdSaveData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiPostByIdSaveResponses,
     DeleteApiPostByIdSaveErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/save",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiPostByIdSaveResponses,
+      DeleteApiPostByIdSaveErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/save",
+      ...options,
+    });
+  }
 
-/**
- * Save post
- */
-export const postApiPostByIdSave = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiPostByIdSaveData, ThrowOnError>,
-): RequestResult<
-  PostApiPostByIdSaveResponses,
-  PostApiPostByIdSaveErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Save post
+   */
+  public postApiPostByIdSave<ThrowOnError extends boolean = false>(
+    options: Options<PostApiPostByIdSaveData, ThrowOnError>,
+  ): RequestResult<
     PostApiPostByIdSaveResponses,
     PostApiPostByIdSaveErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/save",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiPostByIdSaveResponses,
+      PostApiPostByIdSaveErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/save",
+      ...options,
+    });
+  }
 
-/**
- * Vote poll
- */
-export const postApiPostByIdPollVote = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiPostByIdPollVoteData, ThrowOnError>,
-): RequestResult<
-  PostApiPostByIdPollVoteResponses,
-  PostApiPostByIdPollVoteErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Vote poll
+   */
+  public postApiPostByIdPollVote<ThrowOnError extends boolean = false>(
+    options: Options<PostApiPostByIdPollVoteData, ThrowOnError>,
+  ): RequestResult<
     PostApiPostByIdPollVoteResponses,
     PostApiPostByIdPollVoteErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/poll/vote",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiPostByIdPollVoteResponses,
+      PostApiPostByIdPollVoteErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/poll/vote",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * End poll
- */
-export const patchApiPostByIdPollEnd = <ThrowOnError extends boolean = false>(
-  options: Options<PatchApiPostByIdPollEndData, ThrowOnError>,
-): RequestResult<
-  PatchApiPostByIdPollEndResponses,
-  PatchApiPostByIdPollEndErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).patch<
+  /**
+   * End poll
+   */
+  public patchApiPostByIdPollEnd<ThrowOnError extends boolean = false>(
+    options: Options<PatchApiPostByIdPollEndData, ThrowOnError>,
+  ): RequestResult<
     PatchApiPostByIdPollEndResponses,
     PatchApiPostByIdPollEndErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/poll/end",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).patch<
+      PatchApiPostByIdPollEndResponses,
+      PatchApiPostByIdPollEndErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/poll/end",
+      ...options,
+    });
+  }
 
-/**
- * Get poll voters
- */
-export const getApiPostByIdPollVoters = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiPostByIdPollVotersData, ThrowOnError>,
-): RequestResult<
-  GetApiPostByIdPollVotersResponses,
-  GetApiPostByIdPollVotersErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get poll voters
+   */
+  public getApiPostByIdPollVoters<ThrowOnError extends boolean = false>(
+    options: Options<GetApiPostByIdPollVotersData, ThrowOnError>,
+  ): RequestResult<
     GetApiPostByIdPollVotersResponses,
     GetApiPostByIdPollVotersErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{id}/poll/voters",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiPostByIdPollVotersResponses,
+      GetApiPostByIdPollVotersErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{id}/poll/voters",
+      ...options,
+    });
+  }
 
-/**
- * Get products
- */
-export const getApiProducts = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiProductsData, ThrowOnError>,
-): RequestResult<GetApiProductsResponses, GetApiProductsErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
+  /**
+   * Get products
+   */
+  public getApiProducts<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiProductsData, ThrowOnError>,
+  ): RequestResult<
     GetApiProductsResponses,
     GetApiProductsErrors,
     ThrowOnError
-  >({ url: "/api/products", ...options });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiProductsResponses,
+      GetApiProductsErrors,
+      ThrowOnError
+    >({ url: "/api/products", ...options });
+  }
 
-/**
- * Get my products
- */
-export const getApiProductsMy = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiProductsMyData, ThrowOnError>,
-): RequestResult<
-  GetApiProductsMyResponses,
-  GetApiProductsMyErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get my products
+   */
+  public getApiProductsMy<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiProductsMyData, ThrowOnError>,
+  ): RequestResult<
     GetApiProductsMyResponses,
     GetApiProductsMyErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/products/my",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiProductsMyResponses,
+      GetApiProductsMyErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/products/my",
+      ...options,
+    });
+  }
 
-/**
- * Get product by slug
- */
-export const getApiProductsBySlug = <ThrowOnError extends boolean = false>(
-  options: Options<GetApiProductsBySlugData, ThrowOnError>,
-): RequestResult<
-  GetApiProductsBySlugResponses,
-  GetApiProductsBySlugErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get product by slug
+   */
+  public getApiProductsBySlug<ThrowOnError extends boolean = false>(
+    options: Options<GetApiProductsBySlugData, ThrowOnError>,
+  ): RequestResult<
     GetApiProductsBySlugResponses,
     GetApiProductsBySlugErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/products/{slug}",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiProductsBySlugResponses,
+      GetApiProductsBySlugErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/products/{slug}",
+      ...options,
+    });
+  }
 
-/**
- * Remove the current user reaction from a comment
- */
-export const deleteApiCommentByCommentIdReactions = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<DeleteApiCommentByCommentIdReactionsData, ThrowOnError>,
-): RequestResult<
-  DeleteApiCommentByCommentIdReactionsResponses,
-  DeleteApiCommentByCommentIdReactionsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Remove the current user reaction from a comment
+   */
+  public deleteApiCommentByCommentIdReactions<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<DeleteApiCommentByCommentIdReactionsData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiCommentByCommentIdReactionsResponses,
     DeleteApiCommentByCommentIdReactionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/comment/{commentId}/reactions",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiCommentByCommentIdReactionsResponses,
+      DeleteApiCommentByCommentIdReactionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/comment/{commentId}/reactions",
+      ...options,
+    });
+  }
 
-/**
- * Get reactions for a comment
- */
-export const getApiCommentByCommentIdReactions = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiCommentByCommentIdReactionsData, ThrowOnError>,
-): RequestResult<
-  GetApiCommentByCommentIdReactionsResponses,
-  GetApiCommentByCommentIdReactionsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get reactions for a comment
+   */
+  public getApiCommentByCommentIdReactions<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<GetApiCommentByCommentIdReactionsData, ThrowOnError>,
+  ): RequestResult<
     GetApiCommentByCommentIdReactionsResponses,
     GetApiCommentByCommentIdReactionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/comment/{commentId}/reactions",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiCommentByCommentIdReactionsResponses,
+      GetApiCommentByCommentIdReactionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/comment/{commentId}/reactions",
+      ...options,
+    });
+  }
 
-/**
- * Add or update a reaction on a comment
- */
-export const postApiCommentByCommentIdReactions = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PostApiCommentByCommentIdReactionsData, ThrowOnError>,
-): RequestResult<
-  PostApiCommentByCommentIdReactionsResponses,
-  PostApiCommentByCommentIdReactionsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Add or update a reaction on a comment
+   */
+  public postApiCommentByCommentIdReactions<
+    ThrowOnError extends boolean = false,
+  >(
+    options: Options<PostApiCommentByCommentIdReactionsData, ThrowOnError>,
+  ): RequestResult<
     PostApiCommentByCommentIdReactionsResponses,
     PostApiCommentByCommentIdReactionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/comment/{commentId}/reactions",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiCommentByCommentIdReactionsResponses,
+      PostApiCommentByCommentIdReactionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/comment/{commentId}/reactions",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Remove the current user reaction from a post
- */
-export const deleteApiPostByPostIdReactions = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<DeleteApiPostByPostIdReactionsData, ThrowOnError>,
-): RequestResult<
-  DeleteApiPostByPostIdReactionsResponses,
-  DeleteApiPostByPostIdReactionsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Remove the current user reaction from a post
+   */
+  public deleteApiPostByPostIdReactions<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiPostByPostIdReactionsData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiPostByPostIdReactionsResponses,
     DeleteApiPostByPostIdReactionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{postId}/reactions",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiPostByPostIdReactionsResponses,
+      DeleteApiPostByPostIdReactionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{postId}/reactions",
+      ...options,
+    });
+  }
 
-/**
- * Get reactions for a post
- */
-export const getApiPostByPostIdReactions = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<GetApiPostByPostIdReactionsData, ThrowOnError>,
-): RequestResult<
-  GetApiPostByPostIdReactionsResponses,
-  GetApiPostByPostIdReactionsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).get<
+  /**
+   * Get reactions for a post
+   */
+  public getApiPostByPostIdReactions<ThrowOnError extends boolean = false>(
+    options: Options<GetApiPostByPostIdReactionsData, ThrowOnError>,
+  ): RequestResult<
     GetApiPostByPostIdReactionsResponses,
     GetApiPostByPostIdReactionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{postId}/reactions",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).get<
+      GetApiPostByPostIdReactionsResponses,
+      GetApiPostByPostIdReactionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{postId}/reactions",
+      ...options,
+    });
+  }
 
-/**
- * Add or update a reaction on a post
- */
-export const postApiPostByPostIdReactions = <
-  ThrowOnError extends boolean = false,
->(
-  options: Options<PostApiPostByPostIdReactionsData, ThrowOnError>,
-): RequestResult<
-  PostApiPostByPostIdReactionsResponses,
-  PostApiPostByPostIdReactionsErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).post<
+  /**
+   * Add or update a reaction on a post
+   */
+  public postApiPostByPostIdReactions<ThrowOnError extends boolean = false>(
+    options: Options<PostApiPostByPostIdReactionsData, ThrowOnError>,
+  ): RequestResult<
     PostApiPostByPostIdReactionsResponses,
     PostApiPostByPostIdReactionsErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/post/{postId}/reactions",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).post<
+      PostApiPostByPostIdReactionsResponses,
+      PostApiPostByPostIdReactionsErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/post/{postId}/reactions",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Delete a reaction
- */
-export const deleteApiReactionById = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteApiReactionByIdData, ThrowOnError>,
-): RequestResult<
-  DeleteApiReactionByIdResponses,
-  DeleteApiReactionByIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).delete<
+  /**
+   * Delete a reaction
+   */
+  public deleteApiReactionById<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiReactionByIdData, ThrowOnError>,
+  ): RequestResult<
     DeleteApiReactionByIdResponses,
     DeleteApiReactionByIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/reaction/{id}",
-    ...options,
-  });
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiReactionByIdResponses,
+      DeleteApiReactionByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/reaction/{id}",
+      ...options,
+    });
+  }
 
-/**
- * Update an existing reaction
- */
-export const patchApiReactionById = <ThrowOnError extends boolean = false>(
-  options: Options<PatchApiReactionByIdData, ThrowOnError>,
-): RequestResult<
-  PatchApiReactionByIdResponses,
-  PatchApiReactionByIdErrors,
-  ThrowOnError
-> =>
-  (options.client ?? client).patch<
+  /**
+   * Update an existing reaction
+   */
+  public patchApiReactionById<ThrowOnError extends boolean = false>(
+    options: Options<PatchApiReactionByIdData, ThrowOnError>,
+  ): RequestResult<
     PatchApiReactionByIdResponses,
     PatchApiReactionByIdErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/reaction/{id}",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  > {
+    return (options.client ?? this.client).patch<
+      PatchApiReactionByIdResponses,
+      PatchApiReactionByIdErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/reaction/{id}",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Create a new report
- */
-export const postApiReport = <ThrowOnError extends boolean = false>(
-  options: Options<PostApiReportData, ThrowOnError>,
-): RequestResult<PostApiReportResponses, PostApiReportErrors, ThrowOnError> =>
-  (options.client ?? client).post<
-    PostApiReportResponses,
-    PostApiReportErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/report",
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  /**
+   * Create a new report
+   */
+  public postApiReport<ThrowOnError extends boolean = false>(
+    options: Options<PostApiReportData, ThrowOnError>,
+  ): RequestResult<PostApiReportResponses, PostApiReportErrors, ThrowOnError> {
+    return (options.client ?? this.client).post<
+      PostApiReportResponses,
+      PostApiReportErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/report",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
 
-/**
- * Get user profile
- */
-export const getApiUserMe = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiUserMeData, ThrowOnError>,
-): RequestResult<GetApiUserMeResponses, GetApiUserMeErrors, ThrowOnError> =>
-  (options?.client ?? client).get<
-    GetApiUserMeResponses,
-    GetApiUserMeErrors,
-    ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/user/me",
-    ...options,
-  });
+  /**
+   * Get user profile
+   */
+  public getApiUserMe<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiUserMeData, ThrowOnError>,
+  ): RequestResult<GetApiUserMeResponses, GetApiUserMeErrors, ThrowOnError> {
+    return (options?.client ?? this.client).get<
+      GetApiUserMeResponses,
+      GetApiUserMeErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/user/me",
+      ...options,
+    });
+  }
 
-/**
- * Get blocked users list
- */
-export const getApiUserBlocked = <ThrowOnError extends boolean = false>(
-  options?: Options<GetApiUserBlockedData, ThrowOnError>,
-): RequestResult<
-  GetApiUserBlockedResponses,
-  GetApiUserBlockedErrors,
-  ThrowOnError
-> =>
-  (options?.client ?? client).get<
+  /**
+   * Get blocked users list
+   */
+  public getApiUserBlocked<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiUserBlockedData, ThrowOnError>,
+  ): RequestResult<
     GetApiUserBlockedResponses,
     GetApiUserBlockedErrors,
     ThrowOnError
-  >({
-    security: [{ scheme: "bearer", type: "http" }],
-    url: "/api/user/blocked",
-    ...options,
-  });
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiUserBlockedResponses,
+      GetApiUserBlockedErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/user/blocked",
+      ...options,
+    });
+  }
+
+  /**
+   * Get wishlist
+   */
+  public getApiWishlist<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiWishlistData, ThrowOnError>,
+  ): RequestResult<
+    GetApiWishlistResponses,
+    GetApiWishlistErrors,
+    ThrowOnError
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiWishlistResponses,
+      GetApiWishlistErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/wishlist",
+      ...options,
+    });
+  }
+
+  /**
+   * Add to wishlist
+   */
+  public postApiWishlistAdd<ThrowOnError extends boolean = false>(
+    options: Options<PostApiWishlistAddData, ThrowOnError>,
+  ): RequestResult<
+    PostApiWishlistAddResponses,
+    PostApiWishlistAddErrors,
+    ThrowOnError
+  > {
+    return (options.client ?? this.client).post<
+      PostApiWishlistAddResponses,
+      PostApiWishlistAddErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/wishlist/add",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Remove from wishlist
+   */
+  public deleteApiWishlistRemove<ThrowOnError extends boolean = false>(
+    options: Options<DeleteApiWishlistRemoveData, ThrowOnError>,
+  ): RequestResult<
+    DeleteApiWishlistRemoveResponses,
+    DeleteApiWishlistRemoveErrors,
+    ThrowOnError
+  > {
+    return (options.client ?? this.client).delete<
+      DeleteApiWishlistRemoveResponses,
+      DeleteApiWishlistRemoveErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/wishlist/remove",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Get wishlist summary
+   */
+  public getApiWishlistSummary<ThrowOnError extends boolean = false>(
+    options?: Options<GetApiWishlistSummaryData, ThrowOnError>,
+  ): RequestResult<
+    GetApiWishlistSummaryResponses,
+    GetApiWishlistSummaryErrors,
+    ThrowOnError
+  > {
+    return (options?.client ?? this.client).get<
+      GetApiWishlistSummaryResponses,
+      GetApiWishlistSummaryErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/wishlist/summary",
+      ...options,
+    });
+  }
+
+  /**
+   * Get guest wishlist
+   */
+  public postApiWishlistGuest<ThrowOnError extends boolean = false>(
+    options: Options<PostApiWishlistGuestData, ThrowOnError>,
+  ): RequestResult<
+    PostApiWishlistGuestResponses,
+    PostApiWishlistGuestErrors,
+    ThrowOnError
+  > {
+    return (options.client ?? this.client).post<
+      PostApiWishlistGuestResponses,
+      PostApiWishlistGuestErrors,
+      ThrowOnError
+    >({
+      url: "/api/wishlist/guest",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+
+  /**
+   * Sync wishlist
+   */
+  public postApiWishlistSync<ThrowOnError extends boolean = false>(
+    options: Options<PostApiWishlistSyncData, ThrowOnError>,
+  ): RequestResult<
+    PostApiWishlistSyncResponses,
+    PostApiWishlistSyncErrors,
+    ThrowOnError
+  > {
+    return (options.client ?? this.client).post<
+      PostApiWishlistSyncResponses,
+      PostApiWishlistSyncErrors,
+      ThrowOnError
+    >({
+      security: [{ scheme: "bearer", type: "http" }],
+      url: "/api/wishlist/sync",
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  }
+}
